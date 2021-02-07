@@ -13,10 +13,10 @@ import requests
 GEO_IP_API = "https://geolocation-db.com/json/"
 
 
-def get_loc(IP):
+def get_loc(ip):
     """Turn a string representing an IP address into a lat long pair"""
 
-    request = requests.get(GEO_IP_API + IP)
+    request = requests.get(GEO_IP_API + ip)
     if request.status_code != 200:
         return (None, None)
     data = request.json()
@@ -33,52 +33,56 @@ def get_loc(IP):
 
 
 def print_help():
+    """Prints help message and exits"""
+
     print("./vis_route.py IPv4Address")
     print(" e.g. ./vis_route.py 213.138.111.222")
 
 
-try:
-    opts, args = getopt.getopt(sys.argv, "h")
-except getopt.GetoptError:
-    print_help()
-    sys.exit()
-for opt, arg in opts:
-    if opt == "-h":
+if __name__ == "__main__":
+    try:
+        opts, args = getopt.getopt(sys.argv, "h")
+    except getopt.GetoptError:
         print_help()
         sys.exit()
-if len(args) != 2:
-    print_help()
-    sys.exit()
-IP = args[1]
+    for opt, arg in opts:
+        if opt == "-h":
+            print_help()
+            sys.exit()
+    if len(args) != 2:
+        print_help()
+        sys.exit()
+    ip = args[1]
 
-# OS detection Linux/Mac or Windows
-if platform.system() == "Linux" or platform.system() == "Darwin":
-    # Start traceroute command
-    proc = subprocess.Popen(
-        ["traceroute -m 25 -n " + IP],
-        stdout=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
+    # OS detection Linux/Mac or Windows
+    if platform.system() == "Linux" or platform.system() == "Darwin":
+        # Start traceroute command
+        proc = subprocess.Popen(
+            ["traceroute -m 25 -n " + ip],
+            stdout=subprocess.PIPE,
+            shell=True,
+            universal_newlines=True,
+        )
 
-    lastLon = None
-    lastLat = None
-    # Parse individual traceroute command lines
-    for line in proc.stdout:
-        print(line, end="")
-        hopIP = line.split()[1]
+        lastLon = None
+        lastLat = None
+        # Parse individual traceroute command lines
+        for line in proc.stdout:
+            print(line, end="")
+            next_ip = line.split()[1]
 
-        if hopIP in ("*", "to"):
-            continue
-        (lat, lon) = get_loc(hopIP)
-        if lat is None:
-            continue
-        if lastLat is not None and (lastLat - lat + lastLon - lon) != 0.0:
-            print(lastLat,lastLon,lat,lon)
-        lastLat = lat
-        lastLon = lon
-else:
-    print(
-        "Sorry, this python program does not have support for your current operating system!"
-    )
-    sys.exit(-1)
+            if next_ip in ("*", "to"):
+                continue
+            (lat, lon) = get_loc(next_ip)
+            if lat is None:
+                continue
+            if lastLat is not None and (lastLat - lat + lastLon - lon) != 0.0:
+                print(lastLat, lastLon, lat, lon)
+            lastLat = lat
+            lastLon = lon
+    else:
+        print(
+            "Sorry, this python program does not have support for your current operating system!"
+        )
+        sys.exit(-1)
+    
