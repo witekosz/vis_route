@@ -6,16 +6,9 @@ import os
 import platform
 import subprocess
 import sys
-import urllib.request
 
 import requests
 
-# import matplotlib.pyplot as plt
-# from gcmap import GCMapper
-# from mpl_toolkits.basemap import Basemap
-
-
-# gcm = GCMapper()
 
 GEO_IP_API = "https://geolocation-db.com/json/"
 
@@ -58,9 +51,6 @@ if len(args) != 2:
     sys.exit()
 IP = args[1]
 
-# m.bluemarble()
-# m.drawcoastlines(color='r', linewidth=1.0)
-
 # OS detection Linux/Mac or Windows
 if platform.system() == "Linux" or platform.system() == "Darwin":
     # Start traceroute command
@@ -70,17 +60,14 @@ if platform.system() == "Linux" or platform.system() == "Darwin":
         shell=True,
         universal_newlines=True,
     )
-    # plot a pretty enough map
-    # fig = plt.figure(figsize=(10, 6), edgecolor="w")
-    # m = Basemap(projection="mill", lon_0=0, resolution="l")
-    # m.shadedrelief(scale=0.05)
-    # Where we are coming from
+
     lastLon = None
     lastLat = None
     # Parse individual traceroute command lines
     for line in proc.stdout:
         print(line, end="")
         hopIP = line.split()[1]
+
         if hopIP in ("*", "to"):
             continue
         (lat, lon) = get_loc(hopIP)
@@ -88,14 +75,8 @@ if platform.system() == "Linux" or platform.system() == "Darwin":
             continue
         if lastLat is not None and (lastLat - lat + lastLon - lon) != 0.0:
             print(lastLat,lastLon,lat,lon)
-            # x, y = m(lon, lat)
-            # m.scatter(x, y, 10, marker="o", color="r")
-            # (line,) = m.drawgreatcircle(lastLon, lastLat, lon, lat, color="b")
         lastLat = lat
         lastLon = lon
-
-    # plt.tight_layout()
-    # plt.show()
 
 # elif platform.system() == "Windows":
 #     proc = subprocess.Popen(
